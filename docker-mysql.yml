@@ -1,0 +1,27 @@
+version: '3'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  mysql:
+    image: 'bitnami/mysql:8.0.28'
+    ports:
+      - '3306:3306'
+    # volumes:
+    #   - 'mysql_data:/bitnami/mysql/data'
+    #   - /path/to/my_custom.cnf:/opt/bitnami/mysql/conf/my_custom.cnf
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=password
+      # - ALLOW_EMPTY_PASSWORD=yes
+      # - MYSQL_ENABLE_SLOW_QUERY=0
+      # - MYSQL_LONG_QUERY_TIME=10.0
+      # - MYSQL_CHARACTER_SET="utf8mb4"
+      # - MYSQL_COLLATE="utf8mb4_unicode_ci"
+      # - MYSQL_DATABASE=blog
+      # - MYSQL_USER=blog
+      # - MYSQL_PASSWORD=password
+    networks:
+      - app-tier

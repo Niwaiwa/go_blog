@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	"go_blog/controller"
 	"log"
 	"net/http"
 	"os"
@@ -15,10 +17,52 @@ import (
 )
 
 func setRouter() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
+	// By default gin.DefaultWriter = os.Stdout
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		// your custom format
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC3339Nano),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	router.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		if err, ok := recovered.(string); ok {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}))
+
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome Gin Server")
+		c.String(http.StatusOK, "Welcome Go Blog Server")
 	})
+	router.POST("/login", controller.Login)
+	router.POST("/logout", controller.Logout)
+	router.POST("/register", controller.Register)
+
+	userRouter := router.Group("/user")
+	{
+		userRouter.GET("/", controller.GetUser)
+		userRouter.POST("/", controller.UpdateUser)
+		userRouter.DELETE("/", controller.DeleteUser)
+	}
+	articleRouter := router.Group("/article")
+	{
+		articleRouter.GET("/", controller.GetArticles)
+		articleRouter.POST("/", controller.CreateArticle)
+		articleRouter.GET("/:id", controller.GetArticle)
+		articleRouter.POST("/:id", controller.UpdateArticle)
+		articleRouter.DELETE("/:id", controller.DeleteArticle)
+	}
 	return router
 }
 
@@ -29,6 +73,8 @@ func main() {
 	}
 	gin_mode := os.Getenv("GIN_MODE")
 	gin.SetMode(gin_mode)
+	// Disable log's color
+	// gin.DisableConsoleColor()
 
 	router := setRouter()
 
