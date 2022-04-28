@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"go_blog/crypto"
+	"go_blog/model"
 	"log"
 	"net/http"
 
@@ -8,6 +10,7 @@ import (
 )
 
 type GetUserData struct {
+	Username string `json:"username" binding:"required"`
 	Account  string `json:"account" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -20,6 +23,19 @@ func Register(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	encryptPw, err := crypto.PasswordEncrypt(json.Password)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error."})
+	}
+
+	user, err := model.CreateUser(json.Username, json.Account, encryptPw)
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(user)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "account created."})

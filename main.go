@@ -46,22 +46,25 @@ func setRouter() *gin.Engine {
 		c.String(http.StatusOK, "Welcome Go Blog Server")
 	})
 	router.POST("/login", controller.Login)
-	router.POST("/logout", controller.Logout)
 	router.POST("/register", controller.Register)
 
-	userRouter := router.Group("/user")
+	loginCheckRouter := router.Group("/", controller.AuthCheck())
 	{
-		userRouter.GET("/", controller.GetUser)
-		userRouter.POST("/", controller.UpdateUser)
-		userRouter.DELETE("/", controller.DeleteUser)
-	}
-	articleRouter := router.Group("/article")
-	{
-		articleRouter.GET("/", controller.GetArticles)
-		articleRouter.POST("/", controller.CreateArticle)
-		articleRouter.GET("/:id", controller.GetArticle)
-		articleRouter.POST("/:id", controller.UpdateArticle)
-		articleRouter.DELETE("/:id", controller.DeleteArticle)
+		loginCheckRouter.POST("/logout", controller.Logout)
+		userRouter := loginCheckRouter.Group("/user")
+		{
+			userRouter.GET("/", controller.GetUser)
+			userRouter.POST("/", controller.UpdateUser)
+			userRouter.DELETE("/", controller.DeleteUser)
+		}
+		articleRouter := loginCheckRouter.Group("/article")
+		{
+			articleRouter.GET("/", controller.GetArticles)
+			articleRouter.POST("/", controller.CreateArticle)
+			articleRouter.GET("/:id", controller.GetArticle)
+			articleRouter.POST("/:id", controller.UpdateArticle)
+			articleRouter.DELETE("/:id", controller.DeleteArticle)
+		}
 	}
 	return router
 }

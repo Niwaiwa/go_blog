@@ -1,7 +1,7 @@
 version: '3'
 
 networks:
-  app-tier:
+  app-db:
     driver: bridge
 
 services:
@@ -25,4 +25,4 @@ services:
       # - MYSQL_USER=blog
       # - MYSQL_PASSWORD=password
     networks:
-      - app-tier
+      - app-db
