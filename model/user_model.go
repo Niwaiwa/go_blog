@@ -10,8 +10,8 @@ import (
 )
 
 type User struct {
-	ID        uint `gorm:"primaryKey"`
-	Username  string
+	ID        uint   `gorm:"primaryKey"`
+	Username  string `gorm:"uniqueIndex"`
 	Account   string `gorm:"uniqueIndex"`
 	Password  string
 	CreatedAt time.Time
@@ -30,8 +30,8 @@ func CreateUser(username, account, passwrod string) (*User, error) {
 }
 
 func GetUser(account string) (*User, error) {
-	user := User{Account: account}
-	result := db.DBm.First(&user)
+	var user User
+	result := db.DBm.Where("account = ?", account).First(&user)
 	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("user not found")
@@ -40,10 +40,6 @@ func GetUser(account string) (*User, error) {
 		log.Println(err)
 		return nil, err
 	}
-	// if result.RowsAffected == 0 {
-	// 	log.Println("account not found")
-	// 	return nil, nil
-	// }
 	log.Println("user id: ", user.ID, "username: ", user.Username, "account: ", user.Account, "raw: ", result.RowsAffected)
 	return &user, nil
 }

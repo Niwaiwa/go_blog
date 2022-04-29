@@ -29,16 +29,17 @@ func Register(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error."})
+		return
 	}
 
 	user, err := model.CreateUser(json.Username, json.Account, encryptPw)
 	if err != nil {
 		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "parameter error."})
 	} else {
 		log.Println(user)
+		c.JSON(http.StatusOK, gin.H{"status": "account created."})
 	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "account created."})
 }
 
 func GetUser(c *gin.Context) {
