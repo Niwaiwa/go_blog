@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go_blog/common"
 	"go_blog/controller"
 	"log"
 	"net/http"
@@ -18,11 +19,15 @@ import (
 
 func setRouter() *gin.Engine {
 	router := gin.New()
+	router.Use(common.RequestIDMiddleware())
 	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
 	// By default gin.DefaultWriter = os.Stdout
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		// your custom format
-		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+		keys := param.Keys
+		uuid := keys["xRequestId"]
+		return fmt.Sprintf("[%s][%s][%s][%s][%s][%s][%d][%s][%s] %s\n",
+			uuid,
 			param.ClientIP,
 			param.TimeStamp.Format(time.RFC3339Nano),
 			param.Method,

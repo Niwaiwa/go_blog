@@ -14,7 +14,7 @@ type User struct {
 	Username  string `gorm:"uniqueIndex"`
 	Account   string `gorm:"uniqueIndex"`
 	Password  string
-	CreatedAt time.Time
+	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
@@ -37,6 +37,42 @@ func GetUser(account string) (*User, error) {
 			log.Println("user not found")
 			return nil, nil
 		}
+		log.Println(err)
+		return nil, err
+	}
+	log.Println("user id: ", user.ID, "username: ", user.Username, "account: ", user.Account, "raw: ", result.RowsAffected)
+	return &user, nil
+}
+
+func GetUserById(id int32) (*User, error) {
+	var user User
+	result := db.DBm.Where("id = ?", id).First(&user)
+	if err := result.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("user not found")
+			return nil, nil
+		}
+		log.Println(err)
+		return nil, err
+	}
+	log.Println("user id: ", user.ID, "username: ", user.Username, "account: ", user.Account, "raw: ", result.RowsAffected)
+	return &user, nil
+}
+
+func UpdateUserById(id int32, username string) (*User, error) {
+	var user User
+	result := db.DBm.Where("id = ?", id).First(&user)
+	if err := result.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("user not found")
+			return nil, nil
+		}
+		log.Println(err)
+		return nil, err
+	}
+	user.Username = username
+	result = db.DBm.Save(&user)
+	if err := result.Error; err != nil {
 		log.Println(err)
 		return nil, err
 	}

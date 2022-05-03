@@ -35,13 +35,13 @@ func AuthCheck() gin.HandlerFunc {
 			return
 		}
 		log.Println(mapClaims)
-		user_id := mapClaims["id"]
+		userId := mapClaims.UserId
 
 		ctx := context.Background()
-		val, err := db.Rdb.Get(ctx, "_cache_login:"+fmt.Sprint(user_id)).Result()
+		val, err := db.Rdb.Get(ctx, "_cache_login:"+fmt.Sprint(userId)).Result()
 		switch {
 		case err == redis.Nil:
-			log.Println("key does not exist")
+			log.Println("cache key does not exist")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		case err != nil:
@@ -49,10 +49,11 @@ func AuthCheck() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		default:
-			log.Println(user_id, val)
+			log.Println(userId, val)
 		}
 
-		c.Set("user_id", user_id)
+		// log.Println(userId.(type))
+		c.Set("userId", userId)
 		c.Next()
 	}
 }
@@ -65,8 +66,12 @@ func Login(c *gin.Context) {
 	}
 	log.Println(json)
 	user, err := model.GetUser(json.Account)
-	if err != nil || user == nil {
-		log.Println("account wrong", err)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	} else if user == nil {
+		log.Println("account wrong: ", json.Account)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "account or password wrong"})
 		return
 	}
@@ -86,7 +91,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := crypto.NewJwtToken(int(user.ID))
+	tokenString, err := crypto.NewJwtToken(int32(user.ID))
 	if err != nil {
 		log.Println("jwt error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
@@ -98,11 +103,19 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	// log.Println(c.Get("user_id"))
-	// userId, exist := c.Get("user_id")
-	// if exist != true {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-	// }
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	ctx := context.Background()
+	err := db.Rdb.Del(ctx, "_cache_login:"+fmt.Sprint(userId)).Err()
+	if err != nil {
+		log.Println("redis error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "you are logged out",

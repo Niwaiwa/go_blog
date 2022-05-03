@@ -9,24 +9,33 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func NewJwtToken(userId int) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  userId,
-		"nbf": time.Now().Unix(),
-	})
+type MyCustomClaims struct {
+	UserId int32 `json:"user_id"`
+	jwt.StandardClaims
+}
+
+func NewJwtToken(userId int32) (string, error) {
+	customClaims := MyCustomClaims{
+		userId,
+		jwt.StandardClaims{
+			NotBefore: time.Now().Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customClaims)
 	// Sign and get the complete encoded token as a string using the secret
 	secretKey := os.Getenv("SECRET_KEY")
+	log.Println(secretKey)
 	tokenString, err := token.SignedString([]byte(secretKey))
 	return tokenString, err
 }
 
-func ParseValidJwtToken(tokenString string) (jwt.MapClaims, error) {
+func ParseValidJwtToken(tokenString string) (*MyCustomClaims, error) {
 	// Parse takes the token string and a function for looking up the key. The latter is especially
 	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
 	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
 	// to the callback, providing flexibility.
 	secretKey := os.Getenv("SECRET_KEY")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -57,8 +66,7 @@ func ParseValidJwtToken(tokenString string) (jwt.MapClaims, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// log.Println(claims["id"], claims["nbf"])
+	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
 		return claims, nil
 	} else {
 		log.Println(claims, ok, token.Valid)
