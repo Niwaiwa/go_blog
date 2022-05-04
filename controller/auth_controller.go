@@ -22,7 +22,6 @@ type LoginData struct {
 func AuthCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// auth header Authorization
-		// log.Println(c.Request.Header)
 		tokenString := c.Request.Header.Get("Authorization")
 		if tokenString == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -52,7 +51,6 @@ func AuthCheck() gin.HandlerFunc {
 			log.Println(userId, val)
 		}
 
-		// log.Println(userId.(type))
 		c.Set("userId", userId)
 		c.Next()
 	}

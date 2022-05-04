@@ -79,3 +79,17 @@ func UpdateUserById(id int32, username string) (*User, error) {
 	log.Println("user id: ", user.ID, "username: ", user.Username, "account: ", user.Account, "raw: ", result.RowsAffected)
 	return &user, nil
 }
+
+func DeleteUserById(id int32) error {
+	var user User
+	result := db.DBm.Where("id = ?", id).Delete(&user)
+	if err := result.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("user not found")
+			return err
+		}
+		log.Println(err)
+		return err
+	}
+	return nil
+}

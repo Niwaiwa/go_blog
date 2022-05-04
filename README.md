@@ -18,11 +18,21 @@ CREATE DATABASE blog COLLATE 'utf8mb4_unicode_ci';
 
 ## migration with golang-migrate/migrate
 
+download migration file
+
+* [golang-migrate/migrate](https://github.com/golang-migrate/migrate/releases)
+
 mysql connection
 
 ```text
 mysql://user:password@tcp(host:port)/dbname
 mysql://root:password@tcp(127.0.0.1:3306)/blog
+```
+
+create migration file
+
+```
+migrate create -ext sql -dir db/migrations -seq create_users
 ```
 
 migrate up

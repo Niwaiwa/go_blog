@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"context"
+	"fmt"
 	"go_blog/crypto"
+	"go_blog/db"
 	"go_blog/model"
 	"log"
 	"net/http"
@@ -38,7 +41,6 @@ func Register(c *gin.Context) {
 
 	user, err := model.CreateUser(json.Username, json.Account, encryptPw)
 	if err != nil {
-		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "parameter error."})
 	} else {
 		log.Println(user)
@@ -103,5 +105,24 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	err := model.DeleteUserById(userId.(int32))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	}
+	ctx := context.Background()
+	err = db.Rdb.Del(ctx, "_cache_login:"+fmt.Sprint(userId)).Err()
+	if err != nil {
+		log.Println("redis error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	})
 }
