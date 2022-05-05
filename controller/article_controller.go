@@ -22,6 +22,11 @@ type GetArticleData struct {
 	ID int32 `uri:"id" binding:"required"`
 }
 
+type UpdateArticleData struct {
+	Title   *string `json:"title" binding:"required,omitempty"`
+	Content *string `json:"content" binding:"required,omitempty"`
+}
+
 func GetArticles(c *gin.Context) {
 	var qs GetArticlesQuery
 	if err := c.ShouldBindQuery(&qs); err == nil {
@@ -87,13 +92,12 @@ func GetArticle(c *gin.Context) {
 	}
 
 	article, err := model.GetArticleById(data.ID)
-	log.Println(article)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
 		return
 	} else if article == nil {
 		log.Println("no article")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "account wrong"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "article wrong"})
 		return
 	}
 
@@ -104,9 +108,64 @@ func GetArticle(c *gin.Context) {
 }
 
 func UpdateArticle(c *gin.Context) {
+	var data GetArticleData
+	if err := c.ShouldBindUri(&data); err == nil {
+		log.Println(data.ID)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
+	var updateData UpdateArticleData
+	if err := c.ShouldBindJSON(&updateData); err == nil {
+		log.Println(*updateData.Title)
+		log.Println(*updateData.Content)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	article, err := model.UpdateArticleById(data.ID, *updateData.Title, *updateData.Content)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	} else if article == nil {
+		log.Println("no article")
+		c.JSON(http.StatusNotFound, gin.H{"error": "article wrong"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"id":     article.ID,
+	})
 }
 
 func DeleteArticle(c *gin.Context) {
+	var data GetArticleData
+	if err := c.ShouldBindUri(&data); err == nil {
+		log.Println(data.ID)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
+	article, err := model.GetArticleById(data.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	} else if article == nil {
+		log.Println("no article")
+		c.JSON(http.StatusNotFound, gin.H{"error": "article wrong"})
+		return
+	}
+
+	err = model.DeleteArticleById(data.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "please retry"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	})
 }

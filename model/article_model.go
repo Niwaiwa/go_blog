@@ -81,7 +81,7 @@ func UpdateArticleById(id int32, title, content string) (*Article, error) {
 	return &article, nil
 }
 
-func DeleteArticle(id int32) error {
+func DeleteArticleById(id int32) error {
 	var article Article
 	result := db.DBm.Where("id = ?", id).Delete(&article)
 	if err := result.Error; err != nil {
