@@ -33,6 +33,8 @@ docker-compose -p go_blog_db down
 
 ### start go_blog app
 
+start
+
 ```
 docker-compose up -d
 ```
@@ -43,13 +45,7 @@ stop
 docker-compose down
 ```
 
-## create mysql database
-
-start database container with docker
-
-```
-docker-compose -f docker-mysql.yml up -d
-```
+## create database
 
 create database with collate 'utf8mb4_unicode_ci'
 
