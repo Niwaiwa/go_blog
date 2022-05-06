@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go_blog/common"
 	"go_blog/controller"
+	"go_blog/db"
 	"log"
 	"net/http"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func setRouter() *gin.Engine {
@@ -74,19 +74,21 @@ func setRouter() *gin.Engine {
 	return router
 }
 
+func init() {
+	common.LoadEnv()
+	db.InitDBm()
+	db.InitRdb()
+}
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-	gin_mode := os.Getenv("GIN_MODE")
+	gin_mode := common.GetConfig().GinMode
 	gin.SetMode(gin_mode)
 	// Disable log's color
 	// gin.DisableConsoleColor()
 
 	router := setRouter()
 
-	port := os.Getenv("PORT")
+	port := common.GetConfig().Port
 
 	srv := &http.Server{
 		Addr:    ":" + port,

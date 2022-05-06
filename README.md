@@ -2,6 +2,47 @@
 
  A blog project with go.
 
+
+## run with docker-compose
+
+### start mysql and redis
+
+if docker compose v1
+
+```
+docker-compose -f docker-mysql.yml -f docker-redis.yml up -d
+```
+
+if docker compose v2
+
+```
+docker-compose -p go_blog_db -f docker-mysql.yml -f docker-redis.yml up -d
+```
+
+stop if v1
+
+```
+docker-compose -f docker-mysql.yml -f docker-redis.yml down
+```
+
+stop if v2
+
+```
+docker-compose -p go_blog_db down
+```
+
+### start go_blog app
+
+```
+docker-compose up -d
+```
+
+stop
+
+```
+docker-compose down
+```
+
 ## create mysql database
 
 start database container with docker

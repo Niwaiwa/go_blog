@@ -2,8 +2,8 @@ package crypto
 
 import (
 	"fmt"
+	"go_blog/common"
 	"log"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -23,7 +23,7 @@ func NewJwtToken(userId int32) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customClaims)
 	// Sign and get the complete encoded token as a string using the secret
-	secretKey := os.Getenv("SECRET_KEY")
+	secretKey := common.GetConfig().SecretKey
 	log.Println(secretKey)
 	tokenString, err := token.SignedString([]byte(secretKey))
 	return tokenString, err
@@ -34,7 +34,7 @@ func ParseValidJwtToken(tokenString string) (*MyCustomClaims, error) {
 	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
 	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
 	// to the callback, providing flexibility.
-	secretKey := os.Getenv("SECRET_KEY")
+	secretKey := common.GetConfig().SecretKey
 	token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

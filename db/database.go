@@ -1,6 +1,7 @@
 package db
 
 import (
+	"go_blog/common"
 	"log"
 	"time"
 
@@ -10,9 +11,17 @@ import (
 
 var DBm *gorm.DB
 
-func init() {
+func InitDBm() {
+	configset := common.GetConfig()
+	dbHost := configset.DB.Host
+	dbPort := configset.DB.Port
+	dbUsername := configset.DB.Username
+	dbPassword := configset.DB.Password
+	dbName := configset.DB.Name
+
+	dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
+
 	var err error
-	dsn := "root:password@tcp(127.0.0.1:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local"
 	database, err := gorm.Open(mysql.New(mysql.Config{
 		DSN: dsn, // data source name
 		// DefaultStringSize: 256, // default size for string fields
