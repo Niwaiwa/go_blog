@@ -24,7 +24,7 @@ type UpdateUserData struct {
 
 func Register(c *gin.Context) {
 	var json CreateUserData
-	if err := c.ShouldBind(&json); err == nil {
+	if err := c.ShouldBindJSON(&json); err == nil {
 		log.Println(json.Account)
 		log.Println(json.Password)
 	} else {
@@ -80,7 +80,7 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	var json UpdateUserData
-	if err := c.ShouldBind(&json); err == nil {
+	if err := c.ShouldBindJSON(&json); err == nil {
 		log.Println(json.Username)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -2,6 +2,11 @@
 
  A blog project with go.
 
+## build and run
+
+```sh
+go build main.go && ./main.exe
+```
 
 ## run with docker-compose
 
@@ -9,25 +14,25 @@
 
 if docker compose v1
 
-```
+```sh
 docker-compose -f docker-mysql.yml -f docker-redis.yml up -d
 ```
 
 if docker compose v2
 
-```
+```sh
 docker-compose -p go_blog_db -f docker-mysql.yml -f docker-redis.yml up -d
 ```
 
 stop if v1
 
-```
+```sh
 docker-compose -f docker-mysql.yml -f docker-redis.yml down
 ```
 
 stop if v2
 
-```
+```sh
 docker-compose -p go_blog_db down
 ```
 
@@ -35,13 +40,13 @@ docker-compose -p go_blog_db down
 
 start
 
-```
+```sh
 docker-compose up -d
 ```
 
 stop
 
-```
+```sh
 docker-compose down
 ```
 
@@ -49,7 +54,7 @@ docker-compose down
 
 create database with collate 'utf8mb4_unicode_ci'
 
-```
+```sql
 CREATE DATABASE blog COLLATE 'utf8mb4_unicode_ci';
 ```
 
@@ -68,7 +73,7 @@ mysql://root:password@tcp(127.0.0.1:3306)/blog
 
 create migration file
 
-```
+```sh
 migrate create -ext sql -dir db/migrations -seq create_users
 ```
 
