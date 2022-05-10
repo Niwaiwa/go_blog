@@ -62,16 +62,18 @@ func CreateArticle(c *gin.Context) {
 	}
 
 	var json CreateArticleData
-	if err := c.ShouldBind(&json); err == nil {
+	if err := c.ShouldBindJSON(&json); err == nil {
 		log.Println(json.Title)
 		log.Println(json.Content)
 	} else {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	article, err := model.CreateArticle(userId.(int32), json.Title, json.Content)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "parameter error."})
 	} else {
 		log.Println(article)

@@ -58,14 +58,14 @@ func setRouter() *gin.Engine {
 		loginCheckRouter.POST("/logout", controller.Logout)
 		userRouter := loginCheckRouter.Group("/user")
 		{
-			userRouter.GET("/", controller.GetUser)
-			userRouter.POST("/", controller.UpdateUser)
-			userRouter.DELETE("/", controller.DeleteUser)
+			userRouter.GET("", controller.GetUser)
+			userRouter.POST("", controller.UpdateUser)
+			userRouter.DELETE("", controller.DeleteUser)
 		}
 		articleRouter := loginCheckRouter.Group("/article")
 		{
-			articleRouter.GET("/", controller.GetArticles)
-			articleRouter.POST("/", controller.CreateArticle)
+			articleRouter.GET("", controller.GetArticles)
+			articleRouter.POST("", controller.CreateArticle)
 			articleRouter.GET("/:id", controller.GetArticle)
 			articleRouter.POST("/:id", controller.UpdateArticle)
 			articleRouter.DELETE("/:id", controller.DeleteArticle)
